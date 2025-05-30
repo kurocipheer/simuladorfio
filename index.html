@@ -79,6 +79,22 @@
       font-size: 18px;
       white-space: pre-line;
     }
+
+    .boton-regreso {
+      margin-top: 30px;
+      padding: 10px 20px;
+      background-color: #ff0040;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff004077;
+    }
+
+    .boton-regreso:hover {
+      background-color: #cc0033;
+    }
   </style>
 </head>
 <body>
@@ -117,6 +133,7 @@
 
   <br><br>
   <button onclick="crearAtomo()">Visualizar átomo</button>
+  <button onclick="abrirManual()">Manual</button>
 
   <div id="atom"></div>
 
@@ -124,16 +141,9 @@
     Resultado de la transición atómica aparecerá aquí.
   </div>
 
-  <script>
-    // Función para hablar el mensaje de bienvenida
-    window.onload = function() {
-      const mensaje = new SpeechSynthesisUtterance("Bienvenido señor usuario");
-      // Opcional: cambiar voz, velocidad, volumen, etc.
-      mensaje.lang = 'es-ES';
-      mensaje.rate = 1;
-      window.speechSynthesis.speak(mensaje);
-    };
+  <button class="boton-regreso" onclick="regresar()">Regresar</button>
 
+  <script>
     function distribucionElectrones(Z) {
       const niveles = [2, 8, 18, 32];
       const config = [];
@@ -159,7 +169,6 @@
       const atom = document.getElementById("atom");
       atom.innerHTML = ""; // Limpiar
 
-      // Añadir núcleo
       const nucleo = document.createElement("div");
       nucleo.id = "nucleo";
       atom.appendChild(nucleo);
@@ -172,15 +181,15 @@
         const size = 80 + (nivel - 1) * 60;
         const orbit = document.createElement("div");
         orbit.className = "orbit";
-        orbit.style.width = ${size}px;
-        orbit.style.height = ${size}px;
+        orbit.style.width = `${size}px`;
+        orbit.style.height = `${size}px`;
         atom.appendChild(orbit);
 
         for (let j = 0; j < electrones; j++) {
           const electron = document.createElement("div");
           electron.className = "electron";
-          electron.style.setProperty("--radius", ${size / 2}px);
-          electron.style.animationDuration = ${4 + (j % 3)}s;
+          electron.style.setProperty("--radius", `${size / 2}px`);
+          electron.style.animationDuration = `${4 + (j % 3)}s`;
 
           const container = document.createElement("div");
           container.style.position = "absolute";
@@ -188,39 +197,75 @@
           container.style.height = "100%";
           container.style.top = "0";
           container.style.left = "0";
-          container.style.transform = rotate(${(360 / electrones) * j}deg);
+          container.style.transform = `rotate(${(360 / electrones) * j}deg)`;
           container.appendChild(electron);
 
           orbit.appendChild(container);
         }
       });
 
-      // Cálculo de energía y longitud de onda para cualquier Z
-      let resultadoTexto = Elemento con Z = ${Z}, transición de nivel ${nivelInicio} a nivel ${nivelFinal}.;
+      let resultadoTexto = `Elemento con Z = ${Z}, transición de nivel ${nivelInicio} a nivel ${nivelFinal}.`;
 
       if (nivelInicio !== nivelFinal) {
-        const ni = nivelInicio;
-        const nf = nivelFinal;
-
-        const energiaEv = 13.6 * Z * Z * (1 / (ni * 2) - 1 / (nf * 2)); // Fórmula para todos los Z
+        const energiaEv = 13.6 * Z * Z * (1 / (nivelInicio ** 2) - 1 / (nivelFinal ** 2));
         const energiaAbs = Math.abs(energiaEv);
-
         const tipoTransicion = energiaEv < 0 ? "Emisión" : "Absorción";
 
-        const h = 4.1357e-15; // eV·s
-        const c = 3e8; // m/s
-
-        const longitudOnda = (h * c) / energiaAbs; // en metros
+        const h = 4.1357e-15;
+        const c = 3e8;
+        const longitudOnda = (h * c) / energiaAbs;
         const longitudNm = longitudOnda * 1e9;
 
-        resultadoTexto += \n\nTipo de transición: ${tipoTransicion}\n +
-                          ΔE: ${energiaAbs.toFixed(3)} eV\n +
-                          Longitud de onda: ${longitudNm.toFixed(2)} nm;
+        resultadoTexto += `\n\nTipo de transición: ${tipoTransicion}\n` +
+                          `ΔE: ${energiaAbs.toFixed(3)} eV\n` +
+                          `Longitud de onda: ${longitudNm.toFixed(2)} nm`;
       } else {
-        resultadoTexto += \n\nNo hay cambio de nivel; no se produce transición.;
+        resultadoTexto += `\n\nNo hay cambio de nivel; no se produce transición.`;
       }
 
       document.getElementById("resultado").innerText = resultadoTexto;
+    }
+
+    function abrirManual() {
+      const ventana = window.open("", "Manual", "width=600,height=600");
+      ventana.document.write(`
+        <html>
+        <head>
+          <title>Manual del Simulador Atómico</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #0f0f0f;
+              color: #ffffff;
+              padding: 20px;
+              text-align: left;
+            }
+            h2 {
+              color: #00eaff;
+            }
+          </style>
+        </head>
+        <body>
+          <h2>Manual del Simulador Atómico</h2>
+          <p>Este simulador permite visualizar transiciones electrónicas en un átomo.</p>
+          <ul>
+            <li><b>Selecciona un elemento</b> por su número atómico (Z).</li>
+            <li><b>Elige un nivel inicial</b> y un <b>nivel final</b> para simular la transición electrónica.</li>
+            <li><b>Haz clic en "Visualizar átomo"</b> para generar el modelo atómico y calcular la energía involucrada en la transición.</li>
+            <li>El resultado mostrará si hay emisión o absorción de energía, junto con la longitud de onda asociada.</li>
+          </ul>
+          <p>Este modelo es educativo y se basa en la fórmula de Bohr generalizada para átomos con Z mayor que 1.</p>
+        </body>
+        </html>
+      `);
+    }
+
+    function regresar() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "index.html"; // Cambia esto si tu página de inicio se llama diferente
+      }
     }
   </script>
 
